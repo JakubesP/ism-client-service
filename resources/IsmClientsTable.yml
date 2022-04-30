@@ -1,0 +1,11 @@
+IsmClientsTable:
+  Type: AWS::DynamoDB::Table
+  Properties:
+    TableName: IsmClientsTable-${self:provider.stage}
+    BillingMode: PAY_PER_REQUEST
+    AttributeDefinitions:
+      - AttributeName: Id
+        AttributeType: S
+    KeySchema:
+      - AttributeName: Id
+        KeyType: HASH

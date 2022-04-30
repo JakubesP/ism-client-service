@@ -1,0 +1,8 @@
+IsmClientsTableIAM:
+  Effect: Allow
+  Action:
+    - dynamodb:PutItem
+    - dynamodb:Query
+    - dynamodb:UpdateItem
+    - dynamodb:GetItem
+  Resource: ${self:custom.IsmClientsTable.arn}

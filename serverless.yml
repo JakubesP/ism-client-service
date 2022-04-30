@@ -1,0 +1,92 @@
+service: ism-client-service
+
+plugins:
+  - serverless-plugin-typescript
+provider:
+  name: aws
+  runtime: nodejs14.x
+  region: eu-west-1
+  stage: ${opt:stage, 'dev'}
+  environment:
+    LOG_LEVEL: info
+    ISM_CLIENTS_TABLE: ${self:custom.IsmClientsTable.name}
+    ISM_CREATE_CLIENT_TOPIC: ${self:custom.IsmCreateClientTopic.name}
+    ISM_DEACTIVATE_CLIENT_TOPIC: ${self:custom.IsmDeactivateClientTopic.name}
+  iam:
+    role:
+      statements:
+        - ${file(iam/IsmClientsTableIAM.yml):IsmClientsTableIAM}
+        - ${file(iam/IsmSnsTopicsIAM.yml):IsmCreateClientTopicIAM}
+        - ${file(iam/IsmSnsTopicsIAM.yml):IsmDeactivateClientTopicIAM}
+  apiKeys:
+    - IsmClientServiceApiKey
+  usagePlan:
+    quota:
+      limit: 1000
+      period: MONTH
+    throttle:
+      rateLimit: 5
+      burstLimit: 20
+
+resources:
+  Resources:
+    IsmClientsTable: ${file(resources/IsmClientsTable.yml):IsmClientsTable}
+    IsmCreateClientTopic: ${file(resources/IsmSnsTopics.yml):IsmCreateClientTopic}
+    IsmDeactivateClientTopic: ${file(resources/IsmSnsTopics.yml):IsmDeactivateClientTopic}
+  Outputs:
+    IsmCreateClientTopicName: ${file(iam/IsmSnsTopicsIAM.yml):Outputs.IsmCreateClientTopicName}
+    IsmDeactivateClientTopicName: ${file(iam/IsmSnsTopicsIAM.yml):Outputs.IsmDeactivateClientTopicName}
+
+functions:
+  create-client:
+    handler: src/functions/create-client.handler
+    layers:
+      - ${cf:ism-layers-${self:provider.stage}.IsmCommonLayerExport}
+    events:
+      - http:
+          path: client
+          method: post
+          cors: true
+          private: true
+
+  deactivate-client:
+    handler: src/functions/deactivate-client.handler
+    layers:
+      - ${cf:ism-layers-${self:provider.stage}.IsmCommonLayerExport}
+    events:
+      - http:
+          path: client/{id}/deactivate
+          method: post
+          cors: true
+          private: true
+
+  get-client:
+    handler: src/functions/get-client.handler
+    layers:
+      - ${cf:ism-layers-${self:provider.stage}.IsmCommonLayerExport}
+    events:
+      - http:
+          path: client/{id}
+          method: get
+          cors: true
+          private: true
+
+  update-client:
+    handler: src/functions/update-client.handler
+    layers:
+      - ${cf:ism-layers-${self:provider.stage}.IsmCommonLayerExport}
+    events:
+      - http:
+          path: client/{id}
+          method: patch
+          cors: true
+          private: true
+
+custom:
+  IsmClientsTable:
+    name: !Ref IsmClientsTable
+    arn: !GetAtt IsmClientsTable.Arn
+  IsmCreateClientTopic:
+    name: !Ref IsmCreateClientTopic
+  IsmDeactivateClientTopic:
+    name: !Ref IsmDeactivateClientTopic

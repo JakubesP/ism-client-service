@@ -1,0 +1,21 @@
+IsmCreateClientTopicIAM:
+  Effect: Allow
+  Action:
+    - sns:Publish
+  Resource: ${self:custom.IsmCreateClientTopic.name}
+
+IsmDeactivateClientTopicIAM:
+  Effect: Allow
+  Action:
+    - sns:Publish
+  Resource: ${self:custom.IsmDeactivateClientTopic.name}
+
+Outputs:
+  IsmCreateClientTopicName:
+    Value: ${self:custom.IsmCreateClientTopic.name}
+    Export:
+      Name: IsmCreateClientTopic-Name
+  IsmDeactivateClientTopicName:
+    Value: ${self:custom.IsmDeactivateClientTopic.name}
+    Export:
+      Name: IsmDeactivateClientTopic-Name

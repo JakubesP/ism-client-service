@@ -1,0 +1,9 @@
+IsmCreateClientTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: IsmCreateClient
+
+IsmDeactivateClientTopic:
+  Type: AWS::SNS::Topic
+  Properties:
+    TopicName: IsmDeactivateClient
